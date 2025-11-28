@@ -1,4 +1,4 @@
-use crate::domain::entity::{Sales, SalesType, Section, Term, TermStatus};
+use crate::domain::entity::{Sales, SalesType, Section, Term};
 use crate::domain::repository::{SalesRepository, SectionRepository, TermRepository};
 use crate::domain::value_object::Money;
 use chrono::NaiveDateTime;
@@ -140,11 +140,13 @@ where
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub fn correct_term(
         &mut self,
         term_id: Uuid,
         section_id: Uuid,
-        amount_delta: Money,
+        original_amount: Money,
+        correct_amount: Money,
         date: NaiveDateTime,
     ) -> Result<(), String> {
         let term = self
@@ -161,17 +163,27 @@ where
         }
 
         // Even if closed, corrections are allowed but marked as Correction type
-        
-        // Create correction entry
+
+        // 1. Create reversal entry (negative of original)
+        let reversal = Sales::new(
+            -original_amount,
+            date,
+            section_id,
+            term.id,
+            SalesType::Correction,
+        );
+        self.sales_repo.save(reversal)?;
+
+        // 2. Create correction entry (new correct amount)
         let correction = Sales::new(
-            amount_delta,
+            correct_amount,
             date,
             section_id,
             term.id,
             SalesType::Correction,
         );
         self.sales_repo.save(correction)?;
-        
+
         Ok(())
     }
 
@@ -262,7 +274,10 @@ mod tests {
         service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
-        let date = NaiveDate::from_ymd_opt(2025, 6, 1).unwrap().and_hms_opt(10, 0, 0).unwrap();
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1)
+            .unwrap()
+            .and_hms_opt(10, 0, 0)
+            .unwrap();
 
         let result = service.register_sales(amount, date, section_id);
         assert!(result.is_ok());
@@ -286,7 +301,10 @@ mod tests {
         service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
-        let date = NaiveDate::from_ymd_opt(2024, 12, 31).unwrap().and_hms_opt(10, 0, 0).unwrap(); // Outside
+        let date = NaiveDate::from_ymd_opt(2024, 12, 31)
+            .unwrap()
+            .and_hms_opt(10, 0, 0)
+            .unwrap(); // Outside
 
         let result = service.register_sales(amount, date, section_id);
         assert!(result.is_err());
@@ -309,10 +327,15 @@ mod tests {
         let term_id = service.create_term(term).unwrap();
         service.close_term(term_id).unwrap();
 
-        let amount = Money::new(Decimal::from_str("50.00").unwrap());
-        let date = NaiveDate::from_ymd_opt(2025, 6, 1).unwrap().and_hms_opt(10, 0, 0).unwrap();
+        let original_amount = Money::new(Decimal::from_str("100.00").unwrap());
+        let correct_amount = Money::new(Decimal::from_str("150.00").unwrap());
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1)
+            .unwrap()
+            .and_hms_opt(10, 0, 0)
+            .unwrap();
 
-        let result = service.correct_term(term_id, section_id, amount, date);
+        let result =
+            service.correct_term(term_id, section_id, original_amount, correct_amount, date);
         assert!(result.is_ok());
     }
 
@@ -331,10 +354,20 @@ mod tests {
         let term_id = service.create_term(term).unwrap();
         let invalid_section_id = Uuid::new_v4();
 
-        let amount = Money::new(Decimal::from_str("50.00").unwrap());
-        let date = NaiveDate::from_ymd_opt(2025, 6, 1).unwrap().and_hms_opt(10, 0, 0).unwrap();
+        let original_amount = Money::new(Decimal::from_str("100.00").unwrap());
+        let correct_amount = Money::new(Decimal::from_str("150.00").unwrap());
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1)
+            .unwrap()
+            .and_hms_opt(10, 0, 0)
+            .unwrap();
 
-        let result = service.correct_term(term_id, invalid_section_id, amount, date);
+        let result = service.correct_term(
+            term_id,
+            invalid_section_id,
+            original_amount,
+            correct_amount,
+            date,
+        );
         assert!(result.is_err());
     }
 
@@ -358,9 +391,106 @@ mod tests {
         let term_id = service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
-        let date = NaiveDate::from_ymd_opt(2025, 6, 1).unwrap().and_hms_opt(10, 0, 0).unwrap();
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1)
+            .unwrap()
+            .and_hms_opt(10, 0, 0)
+            .unwrap();
 
         let result = service.rebalance_term(term_id, section_a_id, section_b_id, amount, date);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_transform_sales_same_section() {
+        let mut service = AccountingService::new(
+            InMemorySectionRepository::new(),
+            InMemoryTermRepository::new(),
+            InMemorySalesRepository::new(),
+        );
+
+        let section = Section::new("Section A".to_string(), SectionType::Section, None);
+        let section_id = service.create_section(section).unwrap();
+
+        let term = Term::new(
+            NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
+            NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
+        );
+        service.create_term(term).unwrap();
+
+        let amount = Money::new(Decimal::from_str("100.00").unwrap());
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1)
+            .unwrap()
+            .and_hms_opt(10, 0, 0)
+            .unwrap();
+
+        let sales_id = service.register_sales(amount, date, section_id).unwrap();
+
+        let result = service.transform_sales(sales_id, section_id, date);
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            "Cannot transfer sales to the same section"
+        );
+    }
+
+    #[test]
+    fn test_rebalance_term_same_section() {
+        let mut service = AccountingService::new(
+            InMemorySectionRepository::new(),
+            InMemoryTermRepository::new(),
+            InMemorySalesRepository::new(),
+        );
+
+        let section = Section::new("Section A".to_string(), SectionType::Section, None);
+        let section_id = service.create_section(section).unwrap();
+
+        let term = Term::new(
+            NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
+            NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
+        );
+        let term_id = service.create_term(term).unwrap();
+
+        let amount = Money::new(Decimal::from_str("100.00").unwrap());
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1)
+            .unwrap()
+            .and_hms_opt(10, 0, 0)
+            .unwrap();
+
+        let result = service.rebalance_term(term_id, section_id, section_id, amount, date);
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            "Cannot rebalance between the same section"
+        );
+    }
+
+    #[test]
+    fn test_rebalance_term_negative_amount() {
+        let mut service = AccountingService::new(
+            InMemorySectionRepository::new(),
+            InMemoryTermRepository::new(),
+            InMemorySalesRepository::new(),
+        );
+
+        let section_a = Section::new("Section A".to_string(), SectionType::Section, None);
+        let section_a_id = service.create_section(section_a).unwrap();
+        let section_b = Section::new("Section B".to_string(), SectionType::Section, None);
+        let section_b_id = service.create_section(section_b).unwrap();
+
+        let term = Term::new(
+            NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
+            NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
+        );
+        let term_id = service.create_term(term).unwrap();
+
+        let amount = Money::new(Decimal::from_str("-100.00").unwrap());
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1)
+            .unwrap()
+            .and_hms_opt(10, 0, 0)
+            .unwrap();
+
+        let result = service.rebalance_term(term_id, section_a_id, section_b_id, amount, date);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "Rebalance amount must be positive");
     }
 }

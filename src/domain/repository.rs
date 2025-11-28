@@ -15,6 +15,8 @@ pub trait TermRepository {
 pub trait SalesRepository {
     fn save(&mut self, sales: Sales) -> Result<(), String>;
     fn find_by_id(&self, id: &Uuid) -> Option<Sales>;
+    #[allow(dead_code)]
     fn find_by_term(&self, term_id: &Uuid) -> Vec<Sales>;
+    #[allow(dead_code)]
     fn find_by_section_and_term(&self, section_id: &Uuid, term_id: &Uuid) -> Vec<Sales>;
 }

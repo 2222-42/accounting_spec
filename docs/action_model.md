@@ -41,7 +41,7 @@ Finalize the term and calculate totals.
 
 ### Correct Term
 Handle "failed aggregation" or late changes after a term is effectively closed or calculated.
-- **Input**: TermID, SectionID, AdjustmentAmount.
+- **Input**: TermID, SectionID, OriginalAmount, CorrectAmount.
 - **Effect**:
     - Creates a pair of entries:
         1. Negative Sales to offset the incorrect amount.
