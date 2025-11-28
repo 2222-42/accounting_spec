@@ -63,7 +63,7 @@ where
         }
 
         if amount.amount().is_zero() {
-             return Err("Sales amount cannot be zero".to_string());
+            return Err("Sales amount cannot be zero".to_string());
         }
 
         // 3. Create Sales
@@ -87,6 +87,21 @@ where
 
         if self.section_repo.find_by_id(&target_section_id).is_none() {
             return Err("Target section not found".to_string());
+        }
+
+        // Prevent transferring to the same section
+        if target_section_id == original_sales.section_id {
+            return Err("Cannot transfer sales to the same section".to_string());
+        }
+
+        // Validate date is within term range
+        let term = self
+            .term_repo
+            .find_by_id(&original_sales.term_id)
+            .ok_or("Term not found")?;
+
+        if date.date() < term.start_date || date.date() > term.end_date {
+            return Err("Date is outside of the term".to_string());
         }
 
         // Create negative sales for source
@@ -142,7 +157,7 @@ where
         }
 
         if date.date() < term.start_date || date.date() > term.end_date {
-             return Err("Date is outside of the term".to_string());
+            return Err("Date is outside of the term".to_string());
         }
 
         // Even if closed, corrections are allowed but marked as Correction type
@@ -168,7 +183,12 @@ where
         amount: Money,
         date: NaiveDateTime,
     ) -> Result<(), String> {
-         let term = self
+        // Validate that amount is strictly positive
+        if amount.amount().is_sign_negative() || amount.amount().is_zero() {
+            return Err("Rebalance amount must be positive".to_string());
+        }
+
+        let term = self
             .term_repo
             .find_by_id(&term_id)
             .ok_or("Term not found")?;
@@ -180,8 +200,13 @@ where
             return Err("Target section not found".to_string());
         }
 
+        // Prevent rebalancing between the same section
+        if source_section_id == target_section_id {
+            return Err("Cannot rebalance between the same section".to_string());
+        }
+
         if date.date() < term.start_date || date.date() > term.end_date {
-             return Err("Date is outside of the term".to_string());
+            return Err("Date is outside of the term".to_string());
         }
 
         // Negative for source

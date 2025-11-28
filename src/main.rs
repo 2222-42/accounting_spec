@@ -54,7 +54,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let sales_id = service.register_sales(amount, date, section_a_id)?;
     println!("Registered Sales: {} of {}", sales_id, amount);
 
-    // 6. Transform Sales (Transfer 500 from A to B)
+    // 6. Transform Sales (Transfer entire sale from A to B)
     let transfer_date = NaiveDate::from_ymd_opt(2025, 6, 20).unwrap().and_hms_opt(14, 0, 0).unwrap();
     // Note: The transform_sales method in service currently takes a sales_id and moves the WHOLE amount.
     // If we want to move partial, we'd need a different logic or split first. 
