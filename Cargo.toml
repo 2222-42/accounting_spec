@@ -1,0 +1,17 @@
+[package]
+name = "accounting_spec"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = { version = "0.4.19", features = ["serde"] }
+uuid = { version = "0.8", features = ["v4", "serde"] }
+thiserror = "1.0.30"
+rust_decimal = "1.17"
+serde = { version = "1.0.130", features = ["derive"] }
+
+# Pin transitive dependencies to versions compatible with 1.58.1
+proc-macro2 = "=1.0.40"
+quote = "=1.0.15"
+syn = "=1.0.86"
+libc = "=0.2.126"
