@@ -14,6 +14,7 @@ impl Money {
         self.0
     }
 
+    #[allow(dead_code)]
     pub fn zero() -> Self {
         Self(Decimal::ZERO)
     }
@@ -50,6 +51,7 @@ impl std::ops::Neg for Money {
 pub struct AllocationRatio(Decimal);
 
 impl AllocationRatio {
+    #[allow(dead_code)]
     pub fn new(ratio: Decimal) -> Result<Self, String> {
         if ratio < Decimal::ZERO || ratio > Decimal::ONE {
             return Err("Ratio must be between 0 and 1".to_string());
@@ -57,6 +59,7 @@ impl AllocationRatio {
         Ok(Self(ratio))
     }
 
+    #[allow(dead_code)]
     pub fn value(&self) -> Decimal {
         self.0
     }
@@ -71,7 +74,7 @@ mod tests {
     fn test_money_operations() {
         let m1 = Money::new(Decimal::from_str("100.00").unwrap());
         let m2 = Money::new(Decimal::from_str("50.00").unwrap());
-        
+
         assert_eq!(m1 + m2, Money::new(Decimal::from_str("150.00").unwrap()));
         assert_eq!(m1 - m2, Money::new(Decimal::from_str("50.00").unwrap()));
         assert_eq!(-m1, Money::new(Decimal::from_str("-100.00").unwrap()));

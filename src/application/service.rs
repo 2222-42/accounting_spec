@@ -1,4 +1,4 @@
-use crate::domain::entity::{Sales, SalesType, Section, Term, TermStatus};
+use crate::domain::entity::{Sales, SalesType, Section, Term};
 use crate::domain::repository::{SalesRepository, SectionRepository, TermRepository};
 use crate::domain::value_object::Money;
 use chrono::NaiveDateTime;
@@ -63,7 +63,7 @@ where
         }
 
         if amount.amount().is_zero() {
-             return Err("Sales amount cannot be zero".to_string());
+            return Err("Sales amount cannot be zero".to_string());
         }
 
         // 3. Create Sales
@@ -125,11 +125,13 @@ where
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub fn correct_term(
         &mut self,
         term_id: Uuid,
         section_id: Uuid,
-        amount_delta: Money,
+        original_amount: Money,
+        correct_amount: Money,
         date: NaiveDateTime,
     ) -> Result<(), String> {
         let term = self
@@ -142,21 +144,31 @@ where
         }
 
         if date.date() < term.start_date || date.date() > term.end_date {
-             return Err("Date is outside of the term".to_string());
+            return Err("Date is outside of the term".to_string());
         }
 
         // Even if closed, corrections are allowed but marked as Correction type
-        
-        // Create correction entry
+
+        // 1. Create reversal entry (negative of original)
+        let reversal = Sales::new(
+            -original_amount,
+            date,
+            section_id,
+            term.id,
+            SalesType::Correction,
+        );
+        self.sales_repo.save(reversal)?;
+
+        // 2. Create correction entry (new correct amount)
         let correction = Sales::new(
-            amount_delta,
+            correct_amount,
             date,
             section_id,
             term.id,
             SalesType::Correction,
         );
         self.sales_repo.save(correction)?;
-        
+
         Ok(())
     }
 
@@ -168,7 +180,7 @@ where
         amount: Money,
         date: NaiveDateTime,
     ) -> Result<(), String> {
-         let term = self
+        let term = self
             .term_repo
             .find_by_id(&term_id)
             .ok_or("Term not found")?;
@@ -181,7 +193,7 @@ where
         }
 
         if date.date() < term.start_date || date.date() > term.end_date {
-             return Err("Date is outside of the term".to_string());
+            return Err("Date is outside of the term".to_string());
         }
 
         // Negative for source
@@ -237,7 +249,10 @@ mod tests {
         service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
-        let date = NaiveDate::from_ymd_opt(2025, 6, 1).unwrap().and_hms_opt(10, 0, 0).unwrap();
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1)
+            .unwrap()
+            .and_hms_opt(10, 0, 0)
+            .unwrap();
 
         let result = service.register_sales(amount, date, section_id);
         assert!(result.is_ok());
@@ -261,7 +276,10 @@ mod tests {
         service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
-        let date = NaiveDate::from_ymd_opt(2024, 12, 31).unwrap().and_hms_opt(10, 0, 0).unwrap(); // Outside
+        let date = NaiveDate::from_ymd_opt(2024, 12, 31)
+            .unwrap()
+            .and_hms_opt(10, 0, 0)
+            .unwrap(); // Outside
 
         let result = service.register_sales(amount, date, section_id);
         assert!(result.is_err());
@@ -284,10 +302,15 @@ mod tests {
         let term_id = service.create_term(term).unwrap();
         service.close_term(term_id).unwrap();
 
-        let amount = Money::new(Decimal::from_str("50.00").unwrap());
-        let date = NaiveDate::from_ymd_opt(2025, 6, 1).unwrap().and_hms_opt(10, 0, 0).unwrap();
+        let original_amount = Money::new(Decimal::from_str("100.00").unwrap());
+        let correct_amount = Money::new(Decimal::from_str("150.00").unwrap());
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1)
+            .unwrap()
+            .and_hms_opt(10, 0, 0)
+            .unwrap();
 
-        let result = service.correct_term(term_id, section_id, amount, date);
+        let result =
+            service.correct_term(term_id, section_id, original_amount, correct_amount, date);
         assert!(result.is_ok());
     }
 
@@ -306,10 +329,20 @@ mod tests {
         let term_id = service.create_term(term).unwrap();
         let invalid_section_id = Uuid::new_v4();
 
-        let amount = Money::new(Decimal::from_str("50.00").unwrap());
-        let date = NaiveDate::from_ymd_opt(2025, 6, 1).unwrap().and_hms_opt(10, 0, 0).unwrap();
+        let original_amount = Money::new(Decimal::from_str("100.00").unwrap());
+        let correct_amount = Money::new(Decimal::from_str("150.00").unwrap());
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1)
+            .unwrap()
+            .and_hms_opt(10, 0, 0)
+            .unwrap();
 
-        let result = service.correct_term(term_id, invalid_section_id, amount, date);
+        let result = service.correct_term(
+            term_id,
+            invalid_section_id,
+            original_amount,
+            correct_amount,
+            date,
+        );
         assert!(result.is_err());
     }
 
@@ -333,7 +366,10 @@ mod tests {
         let term_id = service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
-        let date = NaiveDate::from_ymd_opt(2025, 6, 1).unwrap().and_hms_opt(10, 0, 0).unwrap();
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1)
+            .unwrap()
+            .and_hms_opt(10, 0, 0)
+            .unwrap();
 
         let result = service.rebalance_term(term_id, section_a_id, section_b_id, amount, date);
         assert!(result.is_ok());
