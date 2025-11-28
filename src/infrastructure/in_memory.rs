@@ -48,6 +48,7 @@ impl TermRepository for InMemoryTermRepository {
         self.storage.get(id).cloned()
     }
 
+    // Performance Note: Linear search. In production, consider an index or caching the open term.
     fn find_open_term(&self) -> Option<Term> {
         self.storage
             .values()
@@ -78,6 +79,7 @@ impl SalesRepository for InMemorySalesRepository {
         self.storage.get(id).cloned()
     }
 
+    // Performance Note: Linear scan. In production, add an index on term_id.
     fn find_by_term(&self, term_id: &Uuid) -> Vec<Sales> {
         self.storage
             .values()
@@ -86,6 +88,7 @@ impl SalesRepository for InMemorySalesRepository {
             .collect()
     }
 
+    // Performance Note: Linear scan. In production, add a composite index on (section_id, term_id).
     fn find_by_section_and_term(&self, section_id: &Uuid, term_id: &Uuid) -> Vec<Sales> {
         self.storage
             .values()

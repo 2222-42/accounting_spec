@@ -62,6 +62,10 @@ where
             return Err("Date is outside of the current term".to_string());
         }
 
+        if amount.amount().is_zero() {
+             return Err("Sales amount cannot be zero".to_string());
+        }
+
         // 3. Create Sales
         let sales = Sales::new(amount, date, section_id, term.id, SalesType::Normal);
         let id = sales.id;
@@ -133,6 +137,14 @@ where
             .find_by_id(&term_id)
             .ok_or("Term not found")?;
 
+        if self.section_repo.find_by_id(&section_id).is_none() {
+            return Err("Section not found".to_string());
+        }
+
+        if date.date() < term.start_date || date.date() > term.end_date {
+             return Err("Date is outside of the term".to_string());
+        }
+
         // Even if closed, corrections are allowed but marked as Correction type
         
         // Create correction entry
@@ -160,6 +172,17 @@ where
             .term_repo
             .find_by_id(&term_id)
             .ok_or("Term not found")?;
+
+        if self.section_repo.find_by_id(&source_section_id).is_none() {
+            return Err("Source section not found".to_string());
+        }
+        if self.section_repo.find_by_id(&target_section_id).is_none() {
+            return Err("Target section not found".to_string());
+        }
+
+        if date.date() < term.start_date || date.date() > term.end_date {
+             return Err("Date is outside of the term".to_string());
+        }
 
         // Negative for source
         let source_correction = Sales::new(
@@ -242,5 +265,77 @@ mod tests {
 
         let result = service.register_sales(amount, date, section_id);
         assert!(result.is_err());
+    }
+    #[test]
+    fn test_correct_term_success() {
+        let mut service = AccountingService::new(
+            InMemorySectionRepository::new(),
+            InMemoryTermRepository::new(),
+            InMemorySalesRepository::new(),
+        );
+
+        let section = Section::new("Test Section".to_string(), SectionType::Section, None);
+        let section_id = service.create_section(section).unwrap();
+
+        let term = Term::new(
+            NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
+            NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
+        );
+        let term_id = service.create_term(term).unwrap();
+        service.close_term(term_id).unwrap();
+
+        let amount = Money::new(Decimal::from_str("50.00").unwrap());
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1).unwrap().and_hms_opt(10, 0, 0).unwrap();
+
+        let result = service.correct_term(term_id, section_id, amount, date);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_correct_term_invalid_section() {
+        let mut service = AccountingService::new(
+            InMemorySectionRepository::new(),
+            InMemoryTermRepository::new(),
+            InMemorySalesRepository::new(),
+        );
+
+        let term = Term::new(
+            NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
+            NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
+        );
+        let term_id = service.create_term(term).unwrap();
+        let invalid_section_id = Uuid::new_v4();
+
+        let amount = Money::new(Decimal::from_str("50.00").unwrap());
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1).unwrap().and_hms_opt(10, 0, 0).unwrap();
+
+        let result = service.correct_term(term_id, invalid_section_id, amount, date);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_rebalance_term_success() {
+        let mut service = AccountingService::new(
+            InMemorySectionRepository::new(),
+            InMemoryTermRepository::new(),
+            InMemorySalesRepository::new(),
+        );
+
+        let section_a = Section::new("Section A".to_string(), SectionType::Section, None);
+        let section_a_id = service.create_section(section_a).unwrap();
+        let section_b = Section::new("Section B".to_string(), SectionType::Section, None);
+        let section_b_id = service.create_section(section_b).unwrap();
+
+        let term = Term::new(
+            NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
+            NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
+        );
+        let term_id = service.create_term(term).unwrap();
+
+        let amount = Money::new(Decimal::from_str("100.00").unwrap());
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1).unwrap().and_hms_opt(10, 0, 0).unwrap();
+
+        let result = service.rebalance_term(term_id, section_a_id, section_b_id, amount, date);
+        assert!(result.is_ok());
     }
 }
