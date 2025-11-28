@@ -3,16 +3,9 @@ use crate::domain::repository::{SalesRepository, SectionRepository, TermReposito
 use std::collections::HashMap;
 use uuid::Uuid;
 
+#[derive(Default)]
 pub struct InMemorySectionRepository {
     storage: HashMap<Uuid, Section>,
-}
-
-impl Default for InMemorySectionRepository {
-    fn default() -> Self {
-        Self {
-            storage: HashMap::new(),
-        }
-    }
 }
 
 impl InMemorySectionRepository {
@@ -32,16 +25,9 @@ impl SectionRepository for InMemorySectionRepository {
     }
 }
 
+#[derive(Default)]
 pub struct InMemoryTermRepository {
     storage: HashMap<Uuid, Term>,
-}
-
-impl Default for InMemoryTermRepository {
-    fn default() -> Self {
-        Self {
-            storage: HashMap::new(),
-        }
-    }
 }
 
 impl InMemoryTermRepository {
@@ -69,16 +55,9 @@ impl TermRepository for InMemoryTermRepository {
     }
 }
 
+#[derive(Default)]
 pub struct InMemorySalesRepository {
     storage: HashMap<Uuid, Sales>,
-}
-
-impl Default for InMemorySalesRepository {
-    fn default() -> Self {
-        Self {
-            storage: HashMap::new(),
-        }
-    }
 }
 
 impl InMemorySalesRepository {
