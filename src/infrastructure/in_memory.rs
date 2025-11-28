@@ -7,11 +7,17 @@ pub struct InMemorySectionRepository {
     storage: HashMap<Uuid, Section>,
 }
 
-impl InMemorySectionRepository {
-    pub fn new() -> Self {
+impl Default for InMemorySectionRepository {
+    fn default() -> Self {
         Self {
             storage: HashMap::new(),
         }
+    }
+}
+
+impl InMemorySectionRepository {
+    pub fn new() -> Self {
+        Self::default()
     }
 }
 
@@ -30,11 +36,17 @@ pub struct InMemoryTermRepository {
     storage: HashMap<Uuid, Term>,
 }
 
-impl InMemoryTermRepository {
-    pub fn new() -> Self {
+impl Default for InMemoryTermRepository {
+    fn default() -> Self {
         Self {
             storage: HashMap::new(),
         }
+    }
+}
+
+impl InMemoryTermRepository {
+    pub fn new() -> Self {
+        Self::default()
     }
 }
 
@@ -61,11 +73,17 @@ pub struct InMemorySalesRepository {
     storage: HashMap<Uuid, Sales>,
 }
 
-impl InMemorySalesRepository {
-    pub fn new() -> Self {
+impl Default for InMemorySalesRepository {
+    fn default() -> Self {
         Self {
             storage: HashMap::new(),
         }
+    }
+}
+
+impl InMemorySalesRepository {
+    pub fn new() -> Self {
+        Self::default()
     }
 }
 
