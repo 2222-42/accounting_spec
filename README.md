@@ -1,7 +1,7 @@
 # Accounting Spec Implementation
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Rust](https://img.shields.io/badge/rust-1.58.1%2B-blue.svg)](https://www.rust-lang.org)
+[![Rust](https://img.shields.io/badge/rust-1.91.1%2B-blue.svg)](https://www.rust-lang.org)
 
 
 This project is a Rust implementation of an accounting specification based on Domain-Driven Design (DDD) principles. It handles sales registration, transfers between sections, term management, and end-of-term corrections.
@@ -27,7 +27,7 @@ The project follows a Clean Architecture / DDD approach:
 
 ## Prerequisites
 
-- Rust 1.58.1 or later (Note: Dependencies in `Cargo.toml` are pinned for compatibility with older Rust versions if needed).
+- Rust 1.91.1 or later (Note: Dependencies in `Cargo.toml` are pinned for compatibility with older Rust versions if needed).
 
 ## Usage
 
