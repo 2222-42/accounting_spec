@@ -61,3 +61,28 @@ impl AllocationRatio {
         self.0
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::str::FromStr;
+
+    #[test]
+    fn test_money_operations() {
+        let m1 = Money::new(Decimal::from_str("100.00").unwrap());
+        let m2 = Money::new(Decimal::from_str("50.00").unwrap());
+        
+        assert_eq!(m1 + m2, Money::new(Decimal::from_str("150.00").unwrap()));
+        assert_eq!(m1 - m2, Money::new(Decimal::from_str("50.00").unwrap()));
+        assert_eq!(-m1, Money::new(Decimal::from_str("-100.00").unwrap()));
+    }
+
+    #[test]
+    fn test_allocation_ratio() {
+        assert!(AllocationRatio::new(Decimal::from_str("0.5").unwrap()).is_ok());
+        assert!(AllocationRatio::new(Decimal::from_str("1.0").unwrap()).is_ok());
+        assert!(AllocationRatio::new(Decimal::from_str("0.0").unwrap()).is_ok());
+        assert!(AllocationRatio::new(Decimal::from_str("1.1").unwrap()).is_err());
+        assert!(AllocationRatio::new(Decimal::from_str("-0.1").unwrap()).is_err());
+    }
+}

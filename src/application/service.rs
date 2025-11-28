@@ -145,14 +145,6 @@ where
         );
         self.sales_repo.save(correction)?;
         
-        // Note: The balancing entry (to make sum 0) is assumed to be handled by another call 
-        // or this function should take a target section to balance against if it's a transfer.
-        // If it's just a pure adjustment (e.g. found new revenue), it might not sum to 0 globally 
-        // but the spec said "accounter makes negative sales and positive sales, that sums to 0".
-        // Let's assume this function handles one side, and the caller manages the balance, 
-        // OR we implement a `rebalance_term` function. 
-        // For simplicity, let's implement `rebalance_term` which takes source and target.
-        
         Ok(())
     }
 
@@ -190,5 +182,65 @@ where
         self.sales_repo.save(target_correction)?;
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::domain::entity::SectionType;
+    use crate::infrastructure::in_memory::{
+        InMemorySalesRepository, InMemorySectionRepository, InMemoryTermRepository,
+    };
+    use chrono::NaiveDate;
+    use rust_decimal::Decimal;
+    use std::str::FromStr;
+
+    #[test]
+    fn test_register_sales_success() {
+        let mut service = AccountingService::new(
+            InMemorySectionRepository::new(),
+            InMemoryTermRepository::new(),
+            InMemorySalesRepository::new(),
+        );
+
+        let section = Section::new("Test Section".to_string(), SectionType::Section, None);
+        let section_id = service.create_section(section).unwrap();
+
+        let term = Term::new(
+            NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
+            NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
+        );
+        service.create_term(term).unwrap();
+
+        let amount = Money::new(Decimal::from_str("100.00").unwrap());
+        let date = NaiveDate::from_ymd_opt(2025, 6, 1).unwrap().and_hms_opt(10, 0, 0).unwrap();
+
+        let result = service.register_sales(amount, date, section_id);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_register_sales_outside_term() {
+        let mut service = AccountingService::new(
+            InMemorySectionRepository::new(),
+            InMemoryTermRepository::new(),
+            InMemorySalesRepository::new(),
+        );
+
+        let section = Section::new("Test Section".to_string(), SectionType::Section, None);
+        let section_id = service.create_section(section).unwrap();
+
+        let term = Term::new(
+            NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
+            NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
+        );
+        service.create_term(term).unwrap();
+
+        let amount = Money::new(Decimal::from_str("100.00").unwrap());
+        let date = NaiveDate::from_ymd_opt(2024, 12, 31).unwrap().and_hms_opt(10, 0, 0).unwrap(); // Outside
+
+        let result = service.register_sales(amount, date, section_id);
+        assert!(result.is_err());
     }
 }
