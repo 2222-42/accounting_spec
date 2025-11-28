@@ -27,7 +27,7 @@ The project follows a Clean Architecture / DDD approach:
 
 ## Prerequisites
 
-- Rust 1.91.1 or later (Note: Dependencies in `Cargo.toml` are pinned for compatibility with older Rust versions if needed).
+- Rust 1.91.1 or later
 
 ## Usage
 
