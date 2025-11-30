@@ -19,9 +19,9 @@ pub struct Section {
 }
 
 impl Section {
-    pub fn new(name: String, section_type: SectionType, parent_id: Option<Uuid>) -> Result<Self, String> {
+    pub fn new(name: String, section_type: SectionType, parent_id: Option<Uuid>) -> Result<Self, &'static str> {
         if name.trim().is_empty() {
-            return Err("Section name cannot be empty".to_string());
+            return Err("Section name cannot be empty");
         }
         Ok(Self {
             id: Uuid::new_v4(),
@@ -47,9 +47,9 @@ pub struct Term {
 }
 
 impl Term {
-    pub fn new(start_date: NaiveDate, end_date: NaiveDate) -> Result<Self, String> {
+    pub fn new(start_date: NaiveDate, end_date: NaiveDate) -> Result<Self, &'static str> {
         if start_date > end_date {
-            return Err("Term start date must be before or equal to end date".to_string());
+            return Err("Term start date must be before or equal to end date");
         }
         Ok(Self {
             id: Uuid::new_v4(),
