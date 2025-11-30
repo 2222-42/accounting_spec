@@ -1,0 +1,3 @@
+[submodule "vendor/specula"]
+	path = vendor/specula
+	url = https://github.com/specula-org/Specula
