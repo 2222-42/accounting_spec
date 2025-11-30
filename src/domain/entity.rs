@@ -19,13 +19,16 @@ pub struct Section {
 }
 
 impl Section {
-    pub fn new(name: String, section_type: SectionType, parent_id: Option<Uuid>) -> Self {
-        Self {
+    pub fn new(name: String, section_type: SectionType, parent_id: Option<Uuid>) -> Result<Self, String> {
+        if name.trim().is_empty() {
+            return Err("Section name cannot be empty".to_string());
+        }
+        Ok(Self {
             id: Uuid::new_v4(),
             name,
             section_type,
             parent_id,
-        }
+        })
     }
 }
 
@@ -44,13 +47,16 @@ pub struct Term {
 }
 
 impl Term {
-    pub fn new(start_date: NaiveDate, end_date: NaiveDate) -> Self {
-        Self {
+    pub fn new(start_date: NaiveDate, end_date: NaiveDate) -> Result<Self, String> {
+        if start_date > end_date {
+            return Err("Term start date must be before or equal to end date".to_string());
+        }
+        Ok(Self {
             id: Uuid::new_v4(),
             start_date,
             end_date,
             status: TermStatus::Open,
-        }
+        })
     }
 
     pub fn close(&mut self) {

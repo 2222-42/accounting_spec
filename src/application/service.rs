@@ -264,13 +264,13 @@ mod tests {
             InMemorySalesRepository::new(),
         );
 
-        let section = Section::new("Test Section".to_string(), SectionType::Section, None);
+        let section = Section::new("Test Section".to_string(), SectionType::Section, None).unwrap();
         let section_id = service.create_section(section).unwrap();
 
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        );
+        ).unwrap();
         service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
@@ -291,13 +291,13 @@ mod tests {
             InMemorySalesRepository::new(),
         );
 
-        let section = Section::new("Test Section".to_string(), SectionType::Section, None);
+        let section = Section::new("Test Section".to_string(), SectionType::Section, None).unwrap();
         let section_id = service.create_section(section).unwrap();
 
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        );
+        ).unwrap();
         service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
@@ -317,13 +317,13 @@ mod tests {
             InMemorySalesRepository::new(),
         );
 
-        let section = Section::new("Test Section".to_string(), SectionType::Section, None);
+        let section = Section::new("Test Section".to_string(), SectionType::Section, None).unwrap();
         let section_id = service.create_section(section).unwrap();
 
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        );
+        ).unwrap();
         let term_id = service.create_term(term).unwrap();
         service.close_term(term_id).unwrap();
 
@@ -350,7 +350,7 @@ mod tests {
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        );
+        ).unwrap();
         let term_id = service.create_term(term).unwrap();
         let invalid_section_id = Uuid::new_v4();
 
@@ -379,15 +379,15 @@ mod tests {
             InMemorySalesRepository::new(),
         );
 
-        let section_a = Section::new("Section A".to_string(), SectionType::Section, None);
+        let section_a = Section::new("Section A".to_string(), SectionType::Section, None).unwrap();
         let section_a_id = service.create_section(section_a).unwrap();
-        let section_b = Section::new("Section B".to_string(), SectionType::Section, None);
+        let section_b = Section::new("Section B".to_string(), SectionType::Section, None).unwrap();
         let section_b_id = service.create_section(section_b).unwrap();
 
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        );
+        ).unwrap();
         let term_id = service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
@@ -408,13 +408,13 @@ mod tests {
             InMemorySalesRepository::new(),
         );
 
-        let section = Section::new("Section A".to_string(), SectionType::Section, None);
+        let section = Section::new("Section A".to_string(), SectionType::Section, None).unwrap();
         let section_id = service.create_section(section).unwrap();
 
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        );
+        ).unwrap();
         service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
@@ -441,13 +441,13 @@ mod tests {
             InMemorySalesRepository::new(),
         );
 
-        let section = Section::new("Section A".to_string(), SectionType::Section, None);
+        let section = Section::new("Section A".to_string(), SectionType::Section, None).unwrap();
         let section_id = service.create_section(section).unwrap();
 
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        );
+        ).unwrap();
         let term_id = service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
@@ -472,15 +472,15 @@ mod tests {
             InMemorySalesRepository::new(),
         );
 
-        let section_a = Section::new("Section A".to_string(), SectionType::Section, None);
+        let section_a = Section::new("Section A".to_string(), SectionType::Section, None).unwrap();
         let section_a_id = service.create_section(section_a).unwrap();
-        let section_b = Section::new("Section B".to_string(), SectionType::Section, None);
+        let section_b = Section::new("Section B".to_string(), SectionType::Section, None).unwrap();
         let section_b_id = service.create_section(section_b).unwrap();
 
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        );
+        ).unwrap();
         let term_id = service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("-100.00").unwrap());

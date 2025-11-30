@@ -47,3 +47,26 @@ As described in the requirements, there are cases where sales are "failed to be 
 ## Aggregation Logic
 - **Term Total** = Sum(Normal Sales) + Sum(Adjustments) + Sum(Corrections).
 - Aggregation must respect the hierarchy: `Department Total = Sum(Division Totals)`.
+
+## Formal Verification & Constraints
+
+To ensure the correctness of the accounting system, we define the following invariants which should be formally verified (e.g., using TLA+ or property-based testing).
+
+### Invariants
+
+1.  **Conservation of Money (Double Entry Principle)**
+    *   For any `rebalance_term` or `transform_sales` operation, the sum of all created/modified entries must equal the original amount (or sum to 0 if it's a correction).
+    *   `Sum(New Entries) == Sum(Old Entries)`
+
+2.  **Term Integrity**
+    *   `Term.start_date <= Term.end_date`
+    *   Sales cannot be registered to a `Closed` term (unless via specific Correction workflow).
+    *   `Sales.date` must be within `[Term.start_date, Term.end_date]`.
+
+3.  **Section Hierarchy**
+    *   A Section cannot be its own parent (no cycles).
+    *   Sales are only registered to leaf sections (SectionType::Section), not aggregate levels (Department/Division), unless specified otherwise.
+
+4.  **Sales Validity**
+    *   `Sales.amount` must be a valid decimal.
+    *   `AllocationRatio` must be between 0 and 1 inclusive.

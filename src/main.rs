@@ -24,8 +24,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut service = AccountingService::new(section_repo, term_repo, sales_repo);
 
     // 3. Create Sections
-    let section_a = Section::new("Sales Dept A".to_string(), SectionType::Section, None);
-    let section_b = Section::new("Sales Dept B".to_string(), SectionType::Section, None);
+    let section_a = Section::new("Sales Dept A".to_string(), SectionType::Section, None)?;
+    let section_b = Section::new("Sales Dept B".to_string(), SectionType::Section, None)?;
 
     let section_a_id = service.create_section(section_a)?;
     let section_b_id = service.create_section(section_b)?;
@@ -38,7 +38,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let term = Term::new(
         NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
         NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-    );
+    )?;
     let term_id = service.create_term(term)?;
     println!("Created Term: {}", term_id);
 
