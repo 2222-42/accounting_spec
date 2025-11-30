@@ -270,7 +270,8 @@ mod tests {
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        ).unwrap();
+        )
+        .unwrap();
         service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
@@ -297,7 +298,8 @@ mod tests {
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        ).unwrap();
+        )
+        .unwrap();
         service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
@@ -323,7 +325,8 @@ mod tests {
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        ).unwrap();
+        )
+        .unwrap();
         let term_id = service.create_term(term).unwrap();
         service.close_term(term_id).unwrap();
 
@@ -350,7 +353,8 @@ mod tests {
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        ).unwrap();
+        )
+        .unwrap();
         let term_id = service.create_term(term).unwrap();
         let invalid_section_id = Uuid::new_v4();
 
@@ -387,7 +391,8 @@ mod tests {
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        ).unwrap();
+        )
+        .unwrap();
         let term_id = service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
@@ -414,7 +419,8 @@ mod tests {
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        ).unwrap();
+        )
+        .unwrap();
         service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
@@ -447,7 +453,8 @@ mod tests {
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        ).unwrap();
+        )
+        .unwrap();
         let term_id = service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("100.00").unwrap());
@@ -480,7 +487,8 @@ mod tests {
         let term = Term::new(
             NaiveDate::from_ymd_opt(2025, 1, 1).unwrap(),
             NaiveDate::from_ymd_opt(2025, 12, 31).unwrap(),
-        ).unwrap();
+        )
+        .unwrap();
         let term_id = service.create_term(term).unwrap();
 
         let amount = Money::new(Decimal::from_str("-100.00").unwrap());

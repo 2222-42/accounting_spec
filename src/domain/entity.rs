@@ -19,7 +19,11 @@ pub struct Section {
 }
 
 impl Section {
-    pub fn new(name: String, section_type: SectionType, parent_id: Option<Uuid>) -> Result<Self, &'static str> {
+    pub fn new(
+        name: String,
+        section_type: SectionType,
+        parent_id: Option<Uuid>,
+    ) -> Result<Self, &'static str> {
         if name.trim().is_empty() {
             return Err("Section name cannot be empty");
         }

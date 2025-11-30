@@ -52,9 +52,9 @@ pub struct AllocationRatio(Decimal);
 
 impl AllocationRatio {
     #[allow(dead_code)]
-    pub fn new(ratio: Decimal) -> Result<Self, String> {
+    pub fn new(ratio: Decimal) -> Result<Self, &'static str> {
         if ratio < Decimal::ZERO || ratio > Decimal::ONE {
-            return Err("Ratio must be between 0 and 1".to_string());
+            return Err("Ratio must be between 0 and 1");
         }
         Ok(Self(ratio))
     }
